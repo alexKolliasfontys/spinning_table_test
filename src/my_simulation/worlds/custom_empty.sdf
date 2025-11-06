@@ -1,0 +1,131 @@
+<?xml version="1.0" ?>
+<sdf version="1.4">
+  <world name="default">
+    <include>
+      <uri>model://ground_plane</uri>
+    </include>
+    <include>
+      <uri>model://sun</uri>
+    </include>
+
+    <physics type="ode">
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1</real_time_factor>
+      <real_time_update_rate>1000</real_time_update_rate>
+      <!-- (2022-12-20) humble: change gravity from [0 0 -9.81] to [0 0 0] -->
+      <gravity>0 0 -9.81</gravity>
+    </physics>
+
+    <model name="rotating_table">
+      <static>false</static>
+      <pose>0.9 0 0 0 0 0</pose> <!-- x y z roll pitch yaw -->
+      <!-- Base link (fixed to world) -->
+      <link name="base">
+        <static>true</static>
+        <inertial>
+          <mass>500.0</mass>
+          <inertia>
+            <ixx>100.01</ixx>
+            <iyy>100.01</iyy>
+            <izz>100.01</izz>
+            <ixy>0.0</ixy>
+            <ixz>0.0</ixz>
+            <iyz>0.0</iyz>
+          </inertia>
+        </inertial>
+        <pose>0 0 0 0 0 0</pose>
+        <collision name="collision">
+          <geometry>
+            <cylinder>
+              <radius>0.3</radius>
+              <length>0.05</length>
+            </cylinder>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <cylinder>
+              <radius>0.3</radius>
+              <length>0.05</length>
+            </cylinder>
+          </geometry>
+          <material>
+            <ambient>0.3 0.3 0.3 1</ambient>
+            <diffuse>0.3 0.3 0.3 1</diffuse>
+          </material>
+        </visual>
+      </link>
+      <!-- Tabletop link (rotates) -->
+      <link name="tabletop">
+        <inertial>
+          <mass>500.0</mass>
+          <inertia>
+            <ixx>100.01</ixx>
+            <iyy>100.01</iyy>
+            <izz>100.01</izz>
+            <ixy>0.0</ixy>
+            <ixz>0.0</ixz>
+            <iyz>0.0</iyz>
+          </inertia>
+        </inertial>
+        <pose>0 0 0.075 0 0 0</pose>
+        <collision name="collision">
+          <geometry>
+            <cylinder>
+              <radius>0.75</radius>
+              <length>0.05</length>
+            </cylinder>
+          </geometry>
+          <!-- <surface>
+            <friction>
+              <mu>1.0</mu>
+              <mu2>1.0</mu2>
+            </friction>
+            <contact>
+              <kp>1e6</kp>
+              <kd>1e3</kd>
+              <max_vel>0.01</max_vel>
+              <min_depth>0.001</min_depth>
+            </contact>
+          </surface> -->
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <cylinder>
+              <radius>0.75</radius>
+              <length>0.05</length>
+            </cylinder>
+          </geometry>
+          <material>
+            <ambient>0.7 0.7 0.7 1</ambient>
+            <diffuse>0.7 0.7 0.7 1</diffuse>
+          </material>
+        </visual>
+      </link>
+      <!-- Revolute joint for rotation -->
+      <joint name="table_rotation" type="revolute">
+        <parent>base</parent>
+        <child>tabletop</child>
+        <pose>0 0 0.075 0 0 0</pose>
+        <axis>
+          <xyz>0 0 1</xyz>
+          <limit>
+            <lower>-1e16</lower>
+            <upper>1e16</upper>
+            <effort>100</effort>
+            <velocity>0.2</velocity>
+          </limit>
+          <dynamics>
+            <damping>1.5</damping>
+          </dynamics>
+        </axis>
+      </joint>
+      <!-- Plugin to apply constant velocity to the joint -->
+      <plugin name="ignition::gazebo::systems::ApplyJointForce" filename="ignition-gazebo-apply-joint-force-system">
+        <joint_name>table_rotation</joint_name>
+        <force>2.0</force> <!-- Constant torque in Nm - adjust to get desired speed -->
+      </plugin>
+    </model>
+
+  </world>
+</sdf>

@@ -1,0 +1,134 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro" name="uflite_gripper">
+  <xacro:macro name="uflite_gripper_urdf" params="prefix:='' attach_to:='' attach_xyz:='0 0 0' attach_rpy:='0 0 0' ">
+    <!-- Fixed joint attaching gripper to tool flange -->
+    <xacro:unless value="${attach_to == ''}">
+      <joint name="${prefix}gripper_fix" type="fixed">
+        <parent link="${attach_to}"/>
+        <child link="${prefix}uflite_gripper_link"/>
+        <origin xyz="${attach_xyz}" rpy="${attach_rpy}"/>
+      </joint>
+    </xacro:unless>
+    <!-- Main gripper body -->
+    <link name="${prefix}uflite_gripper_link">
+      <inertial>
+        <origin xyz="0.0 0.0 0.030" rpy="0 0 0"/>
+        <mass value="0.28"/>
+        <inertia
+          ixx="0.00047106" ixy="3.9292E-07" ixz="2.6537E-06"
+          iyy="0.00033072" iyz="-1.0975E-05" izz="0.00025642"/>
+      </inertial>
+      <!-- Use the original helper macros (assumed available in included stacks) -->
+      <xacro:common_link_visual
+        mesh_filename="$(find my_simulation)/meshes/gripper/lite/visual/gripper_lite"
+        origin_xyz="0 0 0"
+        origin_rpy="0 0 0"
+        material_name="${prefix}White"/>
+      <xacro:common_link_collision
+        mesh_filename="$(find my_simulation)/meshes/gripper/lite/collision/gripper_lite"
+        origin_xyz="0 0 0"
+        origin_rpy="0 0 0"/>
+    </link>
+    <!-- Prismatic jaw links (kept unprefixed as in your added version) -->
+    <link name="jaw_left_link">
+      <inertial>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <mass value="0.02"/>
+        <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6"/>
+      </inertial>
+      <visual>
+        <origin xyz="0.02 0.012 0.04" rpy="0 0 0"/>
+        <geometry><box size="0.04 0.01 0.08"/></geometry>
+      </visual>
+      <collision>
+        <origin xyz="0.02 0.012 0.04" rpy="0 0 0"/>
+        <geometry><box size="0.04 0.01 0.08"/></geometry>
+      </collision>
+      <material name="blue"><color rgba="0 0 0.8 1"/></material>
+    </link>
+    <link name="jaw_right_link">
+      <inertial>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <mass value="0.02"/>
+        <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6"/>
+      </inertial>
+      <visual>
+        <origin xyz="0.02 -0.012 0.04" rpy="0 0 0"/>
+        <geometry><box size="0.04 0.01 0.08"/></geometry>
+      </visual>
+      <collision>
+        <origin xyz="0.02 -0.012 0.04" rpy="0 0 0"/>
+        <geometry><box size="0.04 0.01 0.08"/></geometry>
+      </collision>
+      <material name="blue"><color rgba="0 0 0.8 1"/></material>
+    </link>
+    <!-- Prismatic joints for jaws -->
+    <joint name="jaw_left" type="prismatic">
+      <parent link="${prefix}uflite_gripper_link"/>
+      <child link="jaw_left_link"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <axis xyz="0 1 0"/>
+      <limit lower="0.0" upper="0.02" effort="50.0" velocity="0.2"/>
+      <dynamics damping="1.0" friction="0.0"/>
+    </joint>
+    <joint name="jaw_right" type="prismatic">
+      <parent link="${prefix}uflite_gripper_link"/>
+      <child link="jaw_right_link"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <axis xyz="0 -1 0"/>
+      <limit lower="0.0" upper="0.02" effort="50.0" velocity="0.2"/>
+      <dynamics damping="1.0" friction="0.0"/>
+    </joint>
+    <!-- TCP -->
+    <link name="${prefix}link_tcp">
+      <inertial>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <mass value="1e-4"/>
+        <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6"/>
+      </inertial>
+    </link>
+    <joint name="${prefix}joint_tcp" type="fixed">
+      <origin xyz="0 0 0.0836" rpy="0 0 0"/>
+      <parent link="${prefix}uflite_gripper_link"/>
+      <child link="${prefix}link_tcp"/>
+    </joint>
+  </xacro:macro>
+</robot>
+    <!-- <xacro:unless value="${attach_to == ''}">
+      <joint name="${prefix}gripper_fix" type="fixed">
+        <parent link="${attach_to}"/>
+        <child link="${prefix}uflite_gripper_link"/>
+        <origin xyz="${attach_xyz}" rpy="${attach_rpy}"/>
+      </joint>
+    </xacro:unless>
+    
+    <link name="${prefix}uflite_gripper_link">
+      <inertial>
+        <origin xyz="0.0 0.0 0.030" rpy="0 0 0" />
+        <mass value="0.28" />
+        <inertia
+          ixx="0.00047106" ixy="3.9292E-07" ixz="2.6537E-06"
+          iyy="0.00033072" iyz="-1.0975E-05" izz="0.00025642" />
+      </inertial>
+      <xacro:common_link_visual 
+        mesh_filename="gripper/lite/visual/gripper_lite"  
+        origin_xyz="0 0 0" 
+        origin_rpy="0 0 0"
+        material_name="${prefix}White" />
+      <xacro:common_link_collision 
+        mesh_filename="gripper/lite/collision/gripper_lite"  
+        origin_xyz="0 0 0" 
+        origin_rpy="0 0 0" />
+    </link>
+
+    <link name="${prefix}link_tcp" />
+
+    <joint name="${prefix}joint_tcp" type="fixed">
+      <origin xyz="0 0 0.0836" rpy="0 0 0" />
+      <parent link="${prefix}uflite_gripper_link" />
+      <child link="${prefix}link_tcp" />
+    </joint>
+
+  </xacro:macro>
+
+</robot> -->

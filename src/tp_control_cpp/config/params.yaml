@@ -1,0 +1,12 @@
+tp_control_node:
+  ros__parameters:
+    planning_group: lite6
+    ee_link: link_6
+    base_frame: base_link
+    z_hover: 0.20
+    z_grasp: 0.05
+    t_hover: 3.0
+    t_grasp: 4.5
+    timing_method: ruckig
+    vel_scale: 1.0
+    acc_scale: 1.0
